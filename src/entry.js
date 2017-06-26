@@ -2,8 +2,10 @@
 
 import React from 'react';
 import {render} from 'react-dom';
-import SetStateTest from './component/SetStateTest.js';
+//import SetStateTest from './component/SetStateTest.js';
+
+import App from './component/App.js';
 
 
-render(<SetStateTest/>, document.querySelector('#App'));
+render(<App/>, document.querySelector('#App'));
 

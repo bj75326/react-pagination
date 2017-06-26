@@ -14,7 +14,9 @@ class SetStateTest extends Component{
     }
 
     handleClick(){
-        this.setState({count: this.state.count + 1});
+        this.setState({count: this.state.count + 1}, ()=>{
+            console.log('#callback', this.state);
+        });
         console.log('#this state', this.state);
     }
 
