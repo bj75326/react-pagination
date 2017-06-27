@@ -4,8 +4,8 @@ import React, {Component} from 'react';
 
 class Option extends Component {
 
-    constructor(){
-
+    constructor(props){
+        super(props);
     }
 
     render(){

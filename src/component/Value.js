@@ -4,8 +4,8 @@ import React, {Component} from 'react';
 
 class Value extends Component {
 
-    constructor(){
-
+    constructor(props){
+        super(props);
     }
 
     render(){

@@ -1,0 +1,261 @@
+.bin-select, .bin-select div, .bin-select input, .bin-select span{
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.bin-select{
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    color: #495060;
+    font-size: 14px;
+    line-height: normal;
+    vertical-align: middle;
+}
+
+.bin-select-control{
+    background-color: #fff;
+    border: 1px solid #dddee1;
+    border-radius: 4px;
+    outline: 0;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: pointer;
+    position: relative;
+    transition: all .2s ease-in-out;
+}
+
+.bin-select-control:hover{
+    border-color: #247db0;
+}
+
+.bin-select-single .bin-select-control{
+    height: 32px;
+}
+
+.bin-select-multiple .bin-select-control{
+    padding: 0 24px 0 4px;
+    min-height: 32px;
+}
+
+.bin-select-visible .bin-select-control{
+    border-color: #247db0;
+    outline: 0;
+    box-shadow: 0 0 0 2px rgba(45,140,240,.2);
+}
+
+.bin-select-multiple .bin-select-value-wrapper{
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.bin-select-single .bin-select-control .bin-select-placeholder,
+.bin-select-single .bin-select-control .bin-select-value {
+    display: block;
+    height: 30px;
+    line-height: 30px;
+    font-size:12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-left: 8px;
+    padding-right: 24px;
+}
+
+.bin-select-single .bin-select-control .bin-select-placeholder{
+    color: #bbbec4;
+}
+
+.bin-select-multiple .bin-select-control .bin-select-placeholder{
+    display: block;
+    height: 30px;
+    line-height: 30px;
+    color: #bbbec4;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-left: 4px;
+    padding-right: 22px;
+}
+
+.bin-select-multiple .bin-select-control .bin-select-value{
+    display: inline-block;
+    height: 22px;
+    line-height: 22px;
+    margin: 2px 4px 2px 0;
+    padding: 0 8px;
+    border: 1px solid #e9eaec;
+    border-radius: 3px;
+    background: #f7f7f7;
+    font-size: 12px;
+    vertical-align: middle;
+    opacity: 1;
+    overflow: hidden;
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+
+.bin-select-value .bin-select-value-icon {
+    cursor: pointer;
+    margin-left: 8px;
+    color: #666;
+    opacity: .66;
+}
+
+.bin-select-multiple .bin-select-control .bin-select-value:hover{
+    opacity: .85;
+}
+
+.bin-select-value .bin-select-value-icon:hover{
+    opacity: 1;
+}
+
+
+.bin-select-input {
+    display: inline-block;
+    height: 32px;
+    line-height: 32px;
+    padding: 0 24px 0 8px;
+    font-size: 12px;
+    outline: 0;
+    border: none;
+    color: #495060;
+    background-color: transparent;
+    position: relative;
+    cursor: pointer;
+}
+.bin-select-input>input{
+    height: 100%;
+    padding: 0;
+    color: #495060;
+    outline: 0;
+    border: none;
+    background-color: transparent;
+}
+
+.bin-select-single .bin-select-input{
+    width: 100%;
+}
+.bin-select-single .bin-select-input>input{
+    width: 100%;
+}
+
+.bin-select-multiple .bin-select-input{
+    height: 29px;
+    line-height: 32px;
+    padding: 0 0 0 4px;
+}
+.bin-select-multiple .bin-select-input>input{
+    width: 100%;
+}
+
+.bin-select-clean-zone, .bin-select-arrow-zone{
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    line-height: 100%;
+    font-size: 14px;
+    color: #80848f;
+    height: 100%;
+    width: 24px;
+}
+
+.bin-select-clean-zone{
+    display: none;
+}
+
+.bin-select-clean, .bin-select-arrow{
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    margin-top: -7px;
+    transition: all .2s ease-in-out;
+}
+
+.bin-select-clean{
+    right: 6px;
+}
+
+.bin-select-show-clear .bin-select-clean-zone{
+    display: inline-block;
+}
+
+.bin-select-show-clear .bin-select-arrow-zone{
+    display: none;
+}
+
+.bin-select-visible .bin-select-arrow{
+    transform: rotate(180deg);
+}
+
+.bin-select-dropdown{
+    width: inherit;
+    max-height: 200px;
+    overflow: auto;
+    margin: 5px 0;
+    padding: 5px 0;
+    background-color: #fff;
+    box-sizing: border-box;
+    border-radius: 4px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+    position: absolute;
+    z-index: 999;
+}
+
+.bin-select ul {
+    list-style-type: none;
+    padding-left: 0!important;
+}
+.bin-select-not-found{
+    text-align: center;
+    color: #bbbec4;
+}
+
+.bin-select-item {
+    margin: 0;
+    line-height: normal;
+    padding: 7px 16px;
+    clear: both;
+    color: #495060;
+    font-size: 12px!important;
+    white-space: nowrap;
+    list-style: none;
+    cursor: pointer;
+    transition: background .2s ease-in-out;
+}
+.bin-select-item-focus, .bin-select-item:hover {
+    background: #f3f3f3;
+}
+
+.bin-select-item.bin-select-item-selected {
+    color: #fff;
+    background-color: #247db0;
+}
+
+.bin-select-multiple .bin-select-item.bin-select-item-selected{
+    color: #247db0;
+    background-color: #fff;
+}
+
+.bin-select-multiple .bin-select-item.bin-select-item-selected:hover{
+    background-color: #f3f3f3;
+}
+
+.bin-select-multiple .bin-select-item i{
+    float: right;
+    padding-top: 3px;
+    display: none;
+    opacity: .66;
+}
+
+.bin-select-multiple .bin-select-item.bin-select-item-selected i{
+    display: inline-block;
+}
