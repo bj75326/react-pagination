@@ -338,7 +338,10 @@ header a.button>div:nth-child(2) div.github{
     box-shadow: 0 1px 6px rgba(0,0,0,.2);
     position: absolute;
     z-index: 999;
+    display: none;
 }
+
+
 
 .bin-select ul {
     list-style-type: none;

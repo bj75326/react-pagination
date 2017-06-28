@@ -1,0 +1,54 @@
+.normal {
+    display: none;
+}
+
+.normal.active{
+    display: block;
+}
+
+.enter,.leave{
+    animation-duration: .3s;
+    animation-fill-mode: both;
+    animation-play-state: paused
+}
+
+.enter{
+    animation-name: ivuSlideUpIn;
+    animation-play-state: running;
+    opacity: 0;
+    animation-timing-function: ease-in-out
+}
+
+.leave{
+    animation-name: ivuSlideUpOut;
+    animation-play-state: running;
+    animation-timing-function: ease-in-out
+}
+
+@keyframes ivuSlideUpIn {
+    0% {
+        opacity: 0;
+        transform-origin: 0 0;
+        transform: scaleY(.8)
+    }
+
+    to {
+        opacity: 1;
+        transform-origin: 0 0;
+        transform: scaleY(1)
+    }
+}
+
+@keyframes ivuSlideUpOut {
+    0% {
+        opacity: 1;
+        transform-origin: 0 0;
+        transform: scaleY(1)
+    }
+
+    to {
+        opacity: 0;
+        transform-origin: 0 0;
+        transform: scaleY(.8)
+    }
+}

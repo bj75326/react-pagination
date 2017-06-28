@@ -70,6 +70,10 @@ class Select extends Component{
 
     }
 
+    handleControlClick(){
+        this.setState({showDropdown: true})
+    }
+
     //根据value获取相应option对象的数组
     getValueArray(value, nextProps){
         const props = typeof nextProps === 'object' ? nextProps : this.props;
@@ -141,7 +145,7 @@ class Select extends Component{
         return (
             <div className={selectClassName} style={{width: '200px'}}>
                 <input type="hidden" name="" value=""/>
-                <div className={styles[`${prefixCls}-control`]}>
+                <div className={styles[`${prefixCls}-control`]} onClick={this.handleControlClick.bind(this)} >
                     <span className={styles[`${prefixCls}-value-wrapper`]}>
                         <div className={styles[`${prefixCls}-placeholder`]}>请选择</div>
                         <div className={styles[`${prefixCls}-input`]} style={{display: 'none'}}>
