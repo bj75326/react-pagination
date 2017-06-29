@@ -26,6 +26,10 @@ class Page extends Component {
         }
     }
 
+    handleTransitionEnd(){
+        console.log('transitionEnd');
+    }
+
     handleToggleClick(){
         //const isOpened = !this.state.open;
         //this.setState({open: isOpened});
@@ -33,10 +37,12 @@ class Page extends Component {
 
         if(this.dropdownToggle){
             //close dropdown
+            this.dropdown.classList.remove('enter');
             this.dropdown.classList.add('leave');
 
         }else{
             //open dropdown
+            this.dropdown.classList.remove('leave');
             this.dropdown.classList.add('active');
             this.dropdown.classList.add('enter');
         }
@@ -54,7 +60,8 @@ class Page extends Component {
                     backgroundColor: 'black',
                     margin: '5px auto',
                     transformOrigin: 'center top 0px'
-                }} onAnimationEnd={this.removeDropdownClass.bind(this)} >
+                }} onAnimationEnd={this.removeDropdownClass.bind(this)}
+                   onTransitionEnd={this.handleTransitionEnd.bind(this)} >
 
                 </div>
             </div>

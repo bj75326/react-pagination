@@ -43,7 +43,7 @@ class App extends Component {
                     <h3 id="ji-chu-yong-fa"><a href="#ji-chu-yong-fa" className="header-anchor" aria-hidden="true">#</a>基本用法</h3>
                     <p>适用于广泛的基础单选</p>
                     <div className="demo-box" style={{height: '300px'}}>
-                        <div className="demo-showcase">
+                        <div className="demo-showcase" style={{width: '248px'}}>
                             <Select options={options} ident={"selector_01"} value={this.state.selector_01.selectedValue}
                                     disabled={this.state.selector_01.disabled}
                             />

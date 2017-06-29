@@ -35,11 +35,11 @@ const filterOptions = (options, filterValue, excludeOptions, props)=>{
         }
 
         return props.matchPos === 'start' ? (
-            (matchProp !== 'label' && valueTest.substr(0, filterValue.length) === filterValue) ||
-            (matchProp !== 'value' && labelTest.substr(0, filterValue.length) === filterValue)
+            (props.matchProp !== 'label' && valueTest.substr(0, filterValue.length) === filterValue) ||
+            (props.matchProp !== 'value' && labelTest.substr(0, filterValue.length) === filterValue)
         ):(
-            (matchProp !== 'label' && valueTest.indexOf(filterValue) > -1) ||
-            (matchProp !== 'value' && labelTest.indexOf(filterValue) > -1)
+            (props.matchProp !== 'label' && valueTest.indexOf(filterValue) > -1) ||
+            (props.matchProp !== 'value' && labelTest.indexOf(filterValue) > -1)
         )
     });
 };

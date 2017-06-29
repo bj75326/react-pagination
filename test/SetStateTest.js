@@ -2,7 +2,7 @@
 //case to test setState async/sync
 
 import React, {Component} from 'react';
-import {on, off} from '../common/util.js';
+import {on, off} from '../src/common/util.js';
 
 class SetStateTest extends Component{
 

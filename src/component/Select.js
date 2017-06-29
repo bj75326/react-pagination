@@ -12,6 +12,8 @@ import styles from './style.css';
 
 import defaultFilterOptions from '../utils/defaultFilterOptions.js'
 
+import TransitionEventsHandler from '../utils/TransitionEventsHandler.js'
+
 class Select extends Component{
 
     constructor(props){
@@ -21,6 +23,7 @@ class Select extends Component{
             inputValue : '',
             showDropdown : false,
             isFocused: false
+            //focusedOption
         };
     }
 
@@ -40,15 +43,17 @@ class Select extends Component{
         ignoreCase: true,
         labelKey: 'label',
         matchPos: 'any',
-        matchProp: 'any'
+        matchProp: 'any',
+
+        searchable: false
     };
 
     static PropTypes = {
         prefixCls: PropTypes.string,
         className: PropTypes.string,
-        ident: PropTypes.string.isRequired,
-        selectedValue: PropTypes.any,
-        options: PropTypes.array,
+        ident: PropTypes.string.isRequired,         //select组件实例key
+        selectedValue: PropTypes.any,               //已选option value
+        options: PropTypes.array,                   //select所有选项 option object's array
         disabled: PropTypes.bool,
         multi: PropTypes.bool,                      //是否多选
         required: PropTypes.bool,                   //Form控件是否要求必需
@@ -62,7 +67,11 @@ class Select extends Component{
         ignoreCase: PropTypes.bool,                 //筛选options时是否忽略大小写
         labelKey: PropTypes.string,                 //option对象label属性名
         matchPos: PropTypes.string,                 //(any|start)筛选字符串任意位置或者从头开始匹配
-        matchProp: PropTypes.string                 //(any|label|value)筛选基于option对象的哪个值
+        matchProp: PropTypes.string,                //(any|label|value)筛选基于option对象的哪个值
+
+        searchable: PropTypes.bool,                 //是否开启输入框和filterOption功能
+
+        wrapperStyle: PropTypes.object              //补充样式
 
     };
 
@@ -127,8 +136,67 @@ class Select extends Component{
         }
     }
 
+    //获取当前focus的option的index。
+    getFocusableOptionIndex(selectedOption){
+        let options = this._visibleOptions;
+        if(options.length){
+            return null;
+        }
+        const valueKey = this.props.valueKey;
+        let focusedOption = this.state.focusedOption || selectedOption;
+
+        if(focusedOption && !focusedOption.disabled){
+            let focusedOptionIndex = -1;
+            options.some((option, index)=>{
+                const isOptionEqual = option[valueKey] === focusedOption[valueKey];
+                if(isOptionEqual){
+                    focusedOptionIndex = index;
+                }
+                return isOptionEqual;
+            });
+            if(focusedOptionIndex !== -1){
+                return focusedOptionIndex;
+            }
+        }
+
+        //如果当前state或者selectedOption都不能提供focusedIndex，返回第一个没有disabled的option index。
+        for(let i=0; i< options.length; i++){
+            if(!options[i].disabled){
+                return i;
+            }
+        }
+
+        return null;
+    }
+
+    //渲染一个hidden的input，用作表单提交
+    renderHiddenField(valueArray){
+
+    }
+
     render(){
+        //根据selectedValue获取已选择option对象数组。
         let valueArray = this.getValueArray(this.props.selectedValue);
+
+        let options;
+
+        const searchable = this.props.searchable;
+        //searchable === false, 不进行filterOptions，所有options显示
+        //searchable === true, 进行filterOptions
+        if(searchable === false){
+            options = this._visibleOptions = this.props.options;
+        }else{
+            //
+        }
+
+        const focusedOptionIndex = this.getFocusableOptionIndex(valueArray[0]);
+        let focusedOption = null;
+        if(focusedOptionIndex !== null){
+            focusedOption = this._focusedOption = options[focusedOptionIndex];
+        }else{
+            focusedOption = this._focusedOption = null;
+        }
+
 
         const showDropdown = this.state.showDropdown;
 
@@ -143,8 +211,8 @@ class Select extends Component{
         });
 
         return (
-            <div className={selectClassName} style={{width: '200px'}}>
-                <input type="hidden" name="" value=""/>
+            <div className={selectClassName} style={this.props.wrapperStyle}>
+                {this.renderHiddenField(valueArray)}
                 <div className={styles[`${prefixCls}-control`]} onClick={this.handleControlClick.bind(this)} >
                     <span className={styles[`${prefixCls}-value-wrapper`]}>
                         <div className={styles[`${prefixCls}-placeholder`]}>请选择</div>

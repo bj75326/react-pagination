@@ -8,6 +8,10 @@ export const on = (element, type, handler, userCapture)=>{
     }
 };
 
-export const off = ()=>{
-
+export const off = (element, type, handler, userCapture)=>{
+    if(document.detachEvent){
+        element.detachEvent('on' + type, handler);
+    }else if(document.removeEventListener){
+        element.removeEventListener(type, handler, userCapture);
+    }
 };
