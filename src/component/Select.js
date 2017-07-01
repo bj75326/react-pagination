@@ -10,9 +10,22 @@ import Value from './Value.js';
 
 import styles from './style.css';
 
-import defaultFilterOptions from '../utils/defaultFilterOptions.js'
+import defaultFilterOptions from '../utils/defaultFilterOptions.js';
 
-import TransitionEventsHandler from '../utils/TransitionEventsHandler.js'
+import TransitionEventsHandler from '../utils/TransitionEventsHandler.js';
+
+const stringifyValue = value => {
+    const type = typeof value;
+    if(type === 'string'){
+        return value;
+    }else if(type === 'object'){
+        return JSON.stringify(value);
+    }else if(type === 'number' || type === 'boolean'){
+        return String(value);
+    }else{
+        return '';
+    }
+};
 
 class Select extends Component{
 
@@ -45,7 +58,9 @@ class Select extends Component{
         matchPos: 'any',
         matchProp: 'any',
 
-        searchable: false
+        searchable: false,
+
+        joinValues: false
     };
 
     static PropTypes = {
@@ -71,16 +86,71 @@ class Select extends Component{
 
         searchable: PropTypes.bool,                 //是否开启输入框和filterOption功能
 
-        wrapperStyle: PropTypes.object              //补充样式
+        wrapperStyle: PropTypes.object,             //select补充样式
+        style: PropTypes.object,                    //select control补充样式
+
+        name: PropTypes.string,                     //input hidden name
+        joinValues: PropTypes.bool                  //使用delimiter合并input hidden values，设置false渲染多个input
 
     };
 
-    componentWillMount(){
+    componentDidMount(){
+        //
+    }
+
+    componentWillUnmount(){
 
     }
 
-    handleControlClick(){
-        this.setState({showDropdown: true})
+    handleKeyDown(){
+
+    }
+
+    handleMouseDown(event){
+        console.log(event);
+        console.log(event.button);
+        console.log(event.target);
+        console.log(event.currentTarget);
+        //如果select组件为disabled，或者不为左键点击，不作处理
+        if(!this.props.disabled || event.button !== 0){
+            return;
+        }
+
+        //阻止冒泡与默认行为
+        event.stopPropagation();
+        event.preventDefault();
+
+        if(!this.props.searchable){
+            this.focus();
+        }
+
+    }
+
+    //dropdown动画切换，临时方案
+    toggleDropdownClass(){
+
+        if(!this.dropdown) return;
+
+        const showDropdown = this.state.showDropdown;
+        if(!showDropdown){
+            setTimeout(()=>{
+                this.setState({showDropdown: !showDropdown});
+                this.dropdown.classList.remove('slide-up-leave-active');
+                this.dropdown.classList.add('bin-select-dropdown-active');
+                this.dropdown.classList.add('slide-up-enter-active');
+            }, 0);
+        }else{
+            setTimeout(()=>{
+                this.setState({showDropdown: !showDropdown});
+                this.dropdown.classList
+            }, 0);
+        }
+    }
+
+    //this.input 获取焦点
+    focus() {
+        if (!this.input) return;
+        this.input.focus();
     }
 
     //根据value获取相应option对象的数组
@@ -171,7 +241,31 @@ class Select extends Component{
 
     //渲染一个hidden的input，用作表单提交
     renderHiddenField(valueArray){
-
+        if(!this.props.name) return;
+        if(this.props.joinValues){
+            let value = valueArray.map(i=>stringifyValue(i[this.props.valueKey])).join(this.props.delimiter);
+            return (
+                <input
+                    type="hidden"
+                    name={this.props.name}
+                    value={value}
+                    disabled={this.props.disabled}
+                    ref={ref=>{this.value = ref}}
+                />
+            );
+        }
+        return valueArray.map((item, index)=>{
+            return (
+                <input
+                    key={"hidden." + index}
+                    type="hidden"
+                    name={this.props.name}
+                    disabled={this.props.disabled}
+                    value={stringifyValue(item[this.props.valueKey])}
+                    ref={ref=>{this['value' + index] = ref}}
+                />
+            );
+        });
     }
 
     render(){
@@ -213,7 +307,12 @@ class Select extends Component{
         return (
             <div className={selectClassName} style={this.props.wrapperStyle}>
                 {this.renderHiddenField(valueArray)}
-                <div className={styles[`${prefixCls}-control`]} onClick={this.handleControlClick.bind(this)} >
+                <div className={styles[`${prefixCls}-control`]}
+                     ref={ref=>{this.control = ref}}
+                     style={this.props.style}
+                     onKeyDown={this.handleKeyDown.bind(this)}
+                     onMouseDown={this.handleMouseDown.bind(this)}
+                >
                     <span className={styles[`${prefixCls}-value-wrapper`]}>
                         <div className={styles[`${prefixCls}-placeholder`]}>请选择</div>
                         <div className={styles[`${prefixCls}-input`]} style={{display: 'none'}}>
@@ -227,7 +326,9 @@ class Select extends Component{
                         <span className={styles[`${prefixCls}-arrow`]}><FontAwesome name="caret-down"/></span>
                     </span>
                 </div>
-                <div className={styles[`${prefixCls}-dropdown`]} style={{width:'200px',
+
+                <div className={styles[`${prefixCls}-dropdown`]} ref={ref=>{this.dropdown = ref}}
+                                                                style={{width:'200px',
                                                                  position: 'absolute',
                                                                  top: '32px',
                                                                  left: '0px',
