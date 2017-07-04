@@ -229,7 +229,7 @@
 }
 
 .slide-up-leave-active{
-    animation-name: ivuSlideUpOut;
+    animation-name: binSlideUpOut;
     animation-play-state: running;
     animation-timing-function: ease-in-out;
 }

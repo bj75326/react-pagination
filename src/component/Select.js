@@ -60,7 +60,9 @@ class Select extends Component{
 
         searchable: false,
 
-        joinValues: false
+        joinValues: false,
+
+        valueComponent: Value
     };
 
     static PropTypes = {
@@ -90,15 +92,41 @@ class Select extends Component{
         style: PropTypes.object,                    //select control补充样式
 
         name: PropTypes.string,                     //input hidden name
-        joinValues: PropTypes.bool                  //使用delimiter合并input hidden values，设置false渲染多个input
+        joinValues: PropTypes.bool,                 //使用delimiter合并input hidden values，设置false渲染多个input
 
+        valueRenderer: PropTypes.func,              //自定义渲染value的fn function(option){...}
+        valueComponent: PropTypes.func,             //用来渲染value的react component
+        onValueClick: PropTypes.func                //已选value绑定的click事件句柄
     };
 
     componentDidMount(){
-        //
+
+        if(this.dropdown){
+            const {prefixCls} = this.props;
+            const dropdownClassList = this.dropdown.classList;
+            const endListener = this._endListener = ()=>{
+                const showDropdown = this.state.showDropdown;
+                if(!showDropdown){
+                    dropdownClassList.remove(styles['slide-up-leave-active']);
+                    dropdownClassList.remove(styles[`${prefixCls}-dropdown-active`]);
+                }else{
+                    dropdownClassList.remove(styles['slide-up-enter-active']);
+                }
+            };
+            //dropdown动画结束事件绑定
+            TransitionEventsHandler.addEndEventListener(this.dropdown, endListener);
+        }
     }
 
     componentWillUnmount(){
+
+        //dropdown动画在select组件卸载前解除绑定
+        if(this.dropdown){
+            TransitionEventsHandler.removeEndEventListener(this.dropdown, this._endListener);
+        }
+    }
+
+    handleValueClick(option, event){
 
     }
 
@@ -107,12 +135,9 @@ class Select extends Component{
     }
 
     handleMouseDown(event){
-        console.log(event);
-        console.log(event.button);
-        console.log(event.target);
-        console.log(event.currentTarget);
+
         //如果select组件为disabled，或者不为左键点击，不作处理
-        if(!this.props.disabled || event.button !== 0){
+        if(this.props.disabled || event.button !== 0){
             return;
         }
 
@@ -122,7 +147,11 @@ class Select extends Component{
 
         if(!this.props.searchable){
             this.focus();
+            this.toggleDropdownClass();
+            return;
         }
+
+
 
     }
 
@@ -132,17 +161,20 @@ class Select extends Component{
         if(!this.dropdown) return;
 
         const showDropdown = this.state.showDropdown;
+        const {prefixCls} = this.props;
+        const dropdownClassList = this.dropdown.classList;
         if(!showDropdown){
             setTimeout(()=>{
                 this.setState({showDropdown: !showDropdown});
-                this.dropdown.classList.remove('slide-up-leave-active');
-                this.dropdown.classList.add('bin-select-dropdown-active');
-                this.dropdown.classList.add('slide-up-enter-active');
+                dropdownClassList.remove(styles['slide-up-leave-active']);
+                dropdownClassList.add(styles[`${prefixCls}-dropdown-active`]);
+                dropdownClassList.add(styles['slide-up-enter-active']);
             }, 0);
         }else{
             setTimeout(()=>{
                 this.setState({showDropdown: !showDropdown});
-                this.dropdown.classList
+                dropdownClassList.remove(styles['slide-up-enter-active']);
+                dropdownClassList.add(styles['slide-up-leave-active']);
             }, 0);
         }
     }
@@ -268,6 +300,42 @@ class Select extends Component{
         });
     }
 
+    getOptionLabel(option){
+        return option[this.props.labelKey];
+    }
+
+    renderValue(valueArray, showDropdown){
+        let renderLabel = this.props.valueRenderer || this.getOptionLabel.bind(this);
+        let ValueComponent = this.props.valueComponent;
+
+        const {prefixCls, placeholder, multi} = this.props;
+        //<div className={styles[`${prefixCls}-placeholder`]}>请选择</div>
+        if(!valueArray.length){
+            //无值 无输入
+            return !this.state.inputValue ? <div className={styles[`${prefixCls}-placeholder`]}>{placeholder}</div> : null;
+        }
+        let onClick = this.props.onValueClick ? this.handleValueClick.bind(this) : null;
+        if(multi){
+            //有值 多选
+            return valueArray.map((value, i)=>{
+                return (
+                    <ValueComponent
+
+                    >
+                        {renderLabel(value, i)}
+                        <FontAwesome name="times"/>
+                    </ValueComponent>
+                );
+            });
+        }else if(!this.state.inputValue){
+            //有值 单选 没输入
+        }
+    }
+
+    renderInput(){
+
+    }
+
     render(){
         //根据selectedValue获取已选择option对象数组。
         let valueArray = this.getValueArray(this.props.selectedValue);
@@ -275,12 +343,13 @@ class Select extends Component{
         let options;
 
         const searchable = this.props.searchable;
+        const multi = this.props.multi;
         //searchable === false, 不进行filterOptions，所有options显示
         //searchable === true, 进行filterOptions
         if(searchable === false){
             options = this._visibleOptions = this.props.options;
         }else{
-            //
+            options = this._visibleOptions = this.filterOptions(multi ? this.getValueArray(this.props.selectedValue): null);
         }
 
         const focusedOptionIndex = this.getFocusableOptionIndex(valueArray[0]);
@@ -294,7 +363,7 @@ class Select extends Component{
 
         const showDropdown = this.state.showDropdown;
 
-        const {className, prefixCls, multi} = this.props;
+        const {className, prefixCls} = this.props;
 
         const selectClassName = classnames({
             [styles[prefixCls]]: true,
@@ -314,7 +383,9 @@ class Select extends Component{
                      onMouseDown={this.handleMouseDown.bind(this)}
                 >
                     <span className={styles[`${prefixCls}-value-wrapper`]}>
-                        <div className={styles[`${prefixCls}-placeholder`]}>请选择</div>
+                        {this.renderValue(valueArray, showDropdown)}
+
+
                         <div className={styles[`${prefixCls}-input`]} style={{display: 'none'}}>
                             <input role="combobox" aria-expanded="false" aria-owns aria-haspopup aria-activedescendant value/>
                         </div>
