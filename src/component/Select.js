@@ -35,7 +35,8 @@ class Select extends Component{
         this.state = {
             inputValue : '',
             showDropdown : false,
-            isFocused: false
+            isFocused: false,
+            required: false
             //focusedOption
         };
     }
@@ -62,7 +63,8 @@ class Select extends Component{
 
         joinValues: false,
 
-        valueComponent: Value
+        valueComponent: Value,
+        simpleValue: false
     };
 
     static PropTypes = {
@@ -73,7 +75,7 @@ class Select extends Component{
         options: PropTypes.array,                   //select所有选项 option object's array
         disabled: PropTypes.bool,
         multi: PropTypes.bool,                      //是否多选
-        required: PropTypes.bool,                   //Form控件是否要求必需
+        required: PropTypes.bool,                   //Form控件是否要求必需有值, validator
         placeholder: PropTypes.string,              //placeholder
         delimiter: PropTypes.string,                //selectedValue多选分隔符
         valueKey: PropTypes.string,                 //option对象value属性名
@@ -96,7 +98,11 @@ class Select extends Component{
 
         valueRenderer: PropTypes.func,              //自定义渲染value的fn function(option){...}
         valueComponent: PropTypes.func,             //用来渲染value的react component
-        onValueClick: PropTypes.func                //已选value绑定的click事件句柄
+        onValueClick: PropTypes.func,               //已选value绑定的click事件句柄
+
+        autoBlur: PropTypes.bool,                   //选择某个option或者删除某个value(多选)后，是否自动失焦
+
+        simpleValue: PropTypes.bool                 //setValue时用哪种方式传值给onChange，默认false传递完整value对象
     };
 
     componentDidMount(){
@@ -127,7 +133,10 @@ class Select extends Component{
     }
 
     handleValueClick(option, event){
-
+        if(!this.props.onValueClick){
+            return;
+        }
+        this.props.onValueClick(option, event);
     }
 
     handleKeyDown(){
@@ -184,6 +193,11 @@ class Select extends Component{
         if (!this.input) return;
         this.input.focus();
     }
+    //this.input 失去焦点
+    blurInput(){
+        if(!this.input) return;
+        this.input.blur();
+    }
 
     //根据value获取相应option对象的数组
     getValueArray(value, nextProps){
@@ -201,6 +215,7 @@ class Select extends Component{
     }
 
     //根据value获取相应option对象
+    //任何时候调用expandValue返回的是options数组的某个对象引用，方便之后setValue时直接比较
     expandValue(value, props){
         if(typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean'){
             return value;
@@ -214,6 +229,41 @@ class Select extends Component{
                 return option;
             }
         }
+    }
+
+    setValue(value){
+        if(this.props.autoBlur){
+            this.blurInput();
+        }
+
+        if(!this.props.onChange) return;
+
+        if(this.props.required){
+            const required = this.handleRequired(value, this.props.multi);
+            this.setState({required});
+        }
+        if(this.props.simpleValue && value){
+            value = this.props.multi ? value.map(i=>i[this.props.valueKey]).join(this.props.delimiter) : value[this.props.valueKey];
+        }
+        this.props.onChange(value);
+    }
+
+    removeValue(value){
+        let valueArray = this.getValueArray(this.props.selectedValue);
+        this.setValue(valueArray.filter(i=> i !== value));
+        this.focus();
+    }
+
+    addValue(){
+
+    }
+
+    popValue(){
+
+    }
+
+    clearValue(){
+
     }
 
     //根据输入值筛选options
@@ -300,6 +350,11 @@ class Select extends Component{
         });
     }
 
+    handleRequired(value, multi){
+        if(!value) return true;
+        return (multi ? value.length === 0 : Object.keys(value).length === 0);
+    }
+
     getOptionLabel(option){
         return option[this.props.labelKey];
     }
@@ -308,7 +363,7 @@ class Select extends Component{
         let renderLabel = this.props.valueRenderer || this.getOptionLabel.bind(this);
         let ValueComponent = this.props.valueComponent;
 
-        const {prefixCls, placeholder, multi} = this.props;
+        const {prefixCls, placeholder, multi, ident, disabled} = this.props;
         //<div className={styles[`${prefixCls}-placeholder`]}>请选择</div>
         if(!valueArray.length){
             //无值 无输入
@@ -320,7 +375,11 @@ class Select extends Component{
             return valueArray.map((value, i)=>{
                 return (
                     <ValueComponent
-
+                        id={ident + '_value_' + i}
+                        disabled={disabled}
+                        option={value}
+                        onClick={onClick}
+                        onRemove={this.removeValue.bind(this)}
                     >
                         {renderLabel(value, i)}
                         <FontAwesome name="times"/>
@@ -329,10 +388,23 @@ class Select extends Component{
             });
         }else if(!this.state.inputValue){
             //有值 单选 没输入
+            if(showDropdown) onClick = null;
+            return (
+                <ValueComponent
+                    id={ident + '_value_item'}
+                    disabled={disabled}
+                    onClick={onClick}
+                    option={valueArray[0]}
+                >
+                    {renderLabel(valueArray[0])}
+                </ValueComponent>
+            );
         }
     }
 
-    renderInput(){
+    renderInput(valueArray, focusedOptionIndex){
+
+        const showDropdown = this.state.showDropdown;
 
     }
 
@@ -384,11 +456,7 @@ class Select extends Component{
                 >
                     <span className={styles[`${prefixCls}-value-wrapper`]}>
                         {this.renderValue(valueArray, showDropdown)}
-
-
-                        <div className={styles[`${prefixCls}-input`]} style={{display: 'none'}}>
-                            <input role="combobox" aria-expanded="false" aria-owns aria-haspopup aria-activedescendant value/>
-                        </div>
+                        {this.renderInput(valueArray, focusedOptionIndex)}
                     </span>
                     <span className={styles[`${prefixCls}-clean-zone`]}>
                         <span className={styles[`${prefixCls}-clean`]}><FontAwesome name="times-circle"/></span>
