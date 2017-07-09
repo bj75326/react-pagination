@@ -6,6 +6,7 @@
     <link rel="stylesheet prefetch" href="https://fonts.googleapis.com/css?family=Roboto:400,100,300,500,700,900|RobotoDraft:400,100,300,500,700,900|Material+Icons">
     <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link rel="stylesheet" href="./pc.css">
+    <link rel="stylesheet" href="../src/component/style.css">
 </head>
 <body>
 <div id="App">
@@ -35,14 +36,14 @@
                             <span class="bin-select-value-wrapper">
                                 <!--<div class="bin-select-placeholder">请选择</div>-->
 
-                                <div class="bin-select-value" >
+                                <div class="bin-select-value" style="display: none">
                                     <span class="bin-select-value-label" role="option" aria-selected="true">北京市</span>
                                 </div>
 
                                 <!--<div class="bin-select-input" role="combobox" aria-expanded aria-owns aria-activedescendant style="border: 0px; width: 1px; display: inline-block;"></div>-->
 
-                                <div class="bin-select-input" style="display: none">
-                                    <input role="combobox" aria-expanded="false" aria-owns aria-haspopup aria-activedescendant value/>
+                                <div class="bin-select-input" style="">
+                                    <input role="combobox"  placeholder="请选择" aria-expanded="false" aria-owns aria-haspopup aria-activedescendant value/>
                                 </div>
 
                             </span>
@@ -81,7 +82,7 @@
                         <div class="bin-select-control">
                             <span class="bin-select-value-wrapper">
                                 <!--<div class="bin-select-placeholder">请选择</div>-->
-
+                                <!--
                                 <div class="bin-select-value">
                                     <span class="bin-select-value-label" role="option" aria-selected="true">北京市</span>
                                     <span class="bin-select-value-icon"><i class="fa fa-times" aria-hidden="true"></i></span>
@@ -98,7 +99,7 @@
                                 <!--<div class="bin-select-input" role="combobox" aria-expanded aria-owns aria-activedescendant style="border: 0px; width: 1px; display: inline-block;"></div>-->
 
                                 <div class="bin-select-input" style="width: 56px">
-                                    <input role="combobox" aria-expanded="false" aria-owns aria-haspopup aria-activedescendant value/>
+                                    <input role="combobox" placeholder="请选择" aria-expanded="false" aria-owns aria-haspopup aria-activedescendant value/>
                                 </div>
 
                             </span>

@@ -36,7 +36,8 @@ class Select extends Component{
             inputValue : '',
             showDropdown : false,
             isFocused: false,
-            required: false
+            required: false,
+            isPseudoFocused: false
             //focusedOption
         };
     }
@@ -363,13 +364,45 @@ class Select extends Component{
         let renderLabel = this.props.valueRenderer || this.getOptionLabel.bind(this);
         let ValueComponent = this.props.valueComponent;
 
-        const {prefixCls, placeholder, multi, ident, disabled} = this.props;
+        const {prefixCls, placeholder, multi, ident, disabled, searchable} = this.props;
         //<div className={styles[`${prefixCls}-placeholder`]}>请选择</div>
         if(!valueArray.length){
-            //无值 无输入
-            return !this.state.inputValue ? <div className={styles[`${prefixCls}-placeholder`]}>{placeholder}</div> : null;
+            //无值，不可输入，渲染placeholder
+            return !searchable ? <div className={styles[`${prefixCls}-placeholder`]}>{placeholder}</div> : null;
         }
         let onClick = this.props.onValueClick ? this.handleValueClick.bind(this) : null;
+
+        if(multi){
+            //有值，多选，可输入&不可输入都应正常渲染value
+            return valueArray.map((value, i)=>{
+                return (
+                    <ValueComponent
+                        id={ident + '_value_' + i}
+                        disabled={disabled}
+                        option={value}
+                        onClick={onClick}
+                        onRemove={this.removeValue.bind(this)}
+                    >
+                        {renderLabel(value, i)}
+                        <FontAwesome name="times"/>
+                    </ValueComponent>
+                );
+            });
+        }else if(!searchable){
+            //有值，单选，只有在不可输入的情况渲染value，可输入用input代替
+            if(showDropdown) onClick = null;
+            return (
+                <ValueComponent
+                    id={ident + '_value_item'}
+                    disabled={disabled}
+                    onClick={onClick}
+                    option={valueArray[0]}
+                >
+                    {renderLabel(valueArray[0])}
+                </ValueComponent>
+            );
+        }
+        /*
         if(multi){
             //有值 多选
             return valueArray.map((value, i)=>{
@@ -399,12 +432,12 @@ class Select extends Component{
                     {renderLabel(valueArray[0])}
                 </ValueComponent>
             );
-        }
+        } */
     }
 
     renderInput(valueArray, focusedOptionIndex){
 
-        const showDropdown = this.state.showDropdown;
+
 
     }
 
