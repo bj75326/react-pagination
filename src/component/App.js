@@ -13,7 +13,7 @@ class App extends Component {
         super(props);
         this.state = {
             selector_01: {
-                selectedValue: '',
+                selectedValue: 'beijing',
                 disabled: false,
                 required: false
             }
@@ -44,7 +44,7 @@ class App extends Component {
                     <p>适用于广泛的基础单选</p>
                     <div className="demo-box" style={{height: '300px'}}>
                         <div className="demo-showcase" style={{width: '248px'}}>
-                            <Select options={options} ident={"selector_01"} value={this.state.selector_01.selectedValue}
+                            <Select options={options} ident={"selector_01"} selectedValue={this.state.selector_01.selectedValue}
                                     disabled={this.state.selector_01.disabled}
                             />
                         </div>

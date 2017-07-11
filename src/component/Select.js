@@ -14,6 +14,8 @@ import defaultFilterOptions from '../utils/defaultFilterOptions.js';
 
 import TransitionEventsHandler from '../utils/TransitionEventsHandler.js';
 
+import AutosizeInput from './AutosizeInput.js';
+
 const stringifyValue = value => {
     const type = typeof value;
     if(type === 'string'){
@@ -103,7 +105,16 @@ class Select extends Component{
 
         autoBlur: PropTypes.bool,                   //选择某个option或者删除某个value(多选)后，是否自动失焦
 
-        simpleValue: PropTypes.bool                 //setValue时用哪种方式传值给onChange，默认false传递完整value对象
+        simpleValue: PropTypes.bool,                //setValue时用哪种方式传值给onChange，默认false传递完整value对象
+
+        inputProps: PropTypes.object,               //自定义input属性
+        inputRenderer: PropTypes.func,              //自定义渲染input的fn function(){...}
+
+        'aria-describedby': PropTypes.string,
+        'aria-labelledby': PropTypes.string,
+        'aria-label': PropTypes.string,
+
+        tabIndex: PropTypes.string,                 //tab index
     };
 
     componentDidMount(){
@@ -267,6 +278,18 @@ class Select extends Component{
 
     }
 
+    handleInputBlur(){
+
+    }
+
+    handleInputChange(){
+
+    }
+
+    handleInputFocus(){
+
+    }
+
     //根据输入值筛选options
     filterOptions(excludeOptions){
         let filterValue = this.state.inputValue;
@@ -361,6 +384,7 @@ class Select extends Component{
     }
 
     renderValue(valueArray, showDropdown){
+        console.log(valueArray);
         let renderLabel = this.props.valueRenderer || this.getOptionLabel.bind(this);
         let ValueComponent = this.props.valueComponent;
 
@@ -390,6 +414,7 @@ class Select extends Component{
             });
         }else if(!searchable){
             //有值，单选，只有在不可输入的情况渲染value，可输入用input代替
+            console.log(renderLabel(valueArray[0]));
             if(showDropdown) onClick = null;
             return (
                 <ValueComponent
@@ -437,8 +462,77 @@ class Select extends Component{
 
     renderInput(valueArray, focusedOptionIndex){
 
+        const showDropdown = this.state.showDropdown;
 
+        const prefixCls= this.props.prefixCls;
 
+        const ariaOwns = classnames({
+            [this.props.ident + '-list']: showDropdown,
+            //Todo require check
+            [this.props.ident + '-backspace-remove-message']: this.props.multi
+                && !this.props.disabled
+                && this.state.isFocused
+                && !this.state.inputValue
+        });
+
+        const inputProps = Object.assign({}, this.props.inputProps, {
+            role: 'combobox',
+            'aria-expanded': '' + showDropdown,
+            'aria-owns': ariaOwns,
+            'aria-haspopup': '' + showDropdown,
+            'aria-activedescendant': showDropdown ? this.props.ident + '-option-' + focusedOptionIndex : this.props.ident + '-value',
+            'aria-describedby': this.props['aria-describedby'],
+            'aria-labelledby': this.props['aria-labelledby'],
+            'aria-label': this.props['aria-labels'],
+            tabIndex: this.props.tabIndex,
+            onBlur: this.handleInputBlur.bind(this),
+            onChange: this.handleInputChange.bind(this),
+            onFocus: this.handleInputFocus.bind(this),
+            ref: ref => this.input = ref,
+            required: this.state.required,
+            value: this.state.inputValue
+        });
+
+        if(this.props.inputRenderer){
+            return this.props.inputRenderer(inputProps);
+        }
+
+        if(this.props.disabled || !this.props.searchable){
+            const {...divProps} = this.props.inputProps;
+
+            const ariaOwns = classnames({
+                [this.props.ident + '-list']: showDropdown
+            });
+
+            return (
+                <div
+                    {...divProps}
+                    role="combobox"
+                    aria-expanded={showDropdown}
+                    aria-owns={ariaOwns}
+                    aria-activedescendant={showDropdown ? this.props.ident + '-option-' + focusedOptionIndex : this.props.ident + '-value'}
+                    className={styles[`${prefixCls}-input`]}
+                    tabIndex={this.props.tabIndex || 0}
+                    onBlur={this.handleInputBlur.bind(this)}
+                    onFocus={this.handleInputFocus.bind(this)}
+                    ref={ref=>this.input=ref }
+                    aria-readonly={'' + !!this.props.disabled}
+                    style={{border: 0, width: 1, display:'inline-block' }}
+                />
+            );
+        }
+
+        if(this.props.multi && valueArray.length > 0){
+            return (
+                <AutosizeInput {...inputProps} prefixCls="bin-select" className={styles[`${prefixCls}-input`]} />
+            );
+        }
+
+        return (
+            <div className={styles[`${prefixCls}-input`]}>
+                <input {...inputProps}/>
+            </div>
+        );
     }
 
     render(){

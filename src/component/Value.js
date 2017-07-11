@@ -78,13 +78,13 @@ class Value extends Component {
             <a className={styles[`${prefixCls}-value-label`]} href={option.href} target={option.target}
                onMouseDown={this.handleMouseDown.bind(this)} onTouchEnd={this.handleMouseDown.bind(this)}
             >
-                {children.length ? children[0]: children}
+                {Array.isArray(children) ? children[0]: children}
             </a>
         ) : (
             <span className={styles[`${prefixCls}-value-label`]} role="option" aria-selected="true"
                 id={id}
             >
-                {children.length ? children[0]: children}
+                {Array.isArray(children) ? children[0]: children}
             </span>
         );
     }
