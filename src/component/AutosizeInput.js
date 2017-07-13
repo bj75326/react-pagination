@@ -85,6 +85,18 @@ class AutosizeInput extends Component {
         this.updateInputWidth();
     }
 
+    getInput(){
+        return this.input;
+    }
+
+    focus(){
+        this.input.focus();
+    }
+
+    blur(){
+        this.input.blur();
+    }
+
     //挂载之后获取 input css 样式
     copyInputStyles(){
 

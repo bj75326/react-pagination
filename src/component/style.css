@@ -152,6 +152,7 @@
     height: 29px;
     line-height: 32px;
     padding: 0 0 0 4px;
+    flex: 1 0;
 }
 .bin-select-multiple .bin-select-input>input{
     width: 100%;

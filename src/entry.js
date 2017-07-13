@@ -6,6 +6,7 @@ import {render} from 'react-dom';
 //import AnimationTest from '../test/AnimationTest2.js';
 //import AutosizeInput from './component/AutosizeInput.js';
 //import TestAutoSizeInput from '../test/testAutoSizeInput.js';
+//import InputChange from '../test/InputChange.js';
 
 import App from './component/App.js';
 

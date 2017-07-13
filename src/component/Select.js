@@ -82,6 +82,7 @@ class Select extends Component{
         placeholder: PropTypes.string,              //placeholder
         delimiter: PropTypes.string,                //selectedValue多选分隔符
         valueKey: PropTypes.string,                 //option对象value属性名
+        onChange: PropTypes.func,                   //母组件传递的更新句柄
 
         filterOptions: PropTypes.any,               //自定义筛选函数模块，设置为假值(false, 0, '')可跳过筛选
         filterOption: PropTypes.func,               //自定义条件筛选函数
@@ -115,6 +116,8 @@ class Select extends Component{
         'aria-label': PropTypes.string,
 
         tabIndex: PropTypes.string,                 //tab index
+
+        onFocus: PropTypes.func,                    //select input(div)获取焦点回调句柄
     };
 
     componentDidMount(){
@@ -156,7 +159,7 @@ class Select extends Component{
     }
 
     handleMouseDown(event){
-
+        console.log('mousedown');
         //如果select组件为disabled，或者不为左键点击，不作处理
         if(this.props.disabled || event.button !== 0){
             return;
@@ -257,7 +260,7 @@ class Select extends Component{
         if(this.props.simpleValue && value){
             value = this.props.multi ? value.map(i=>i[this.props.valueKey]).join(this.props.delimiter) : value[this.props.valueKey];
         }
-        this.props.onChange(value);
+        this.props.onChange(this.props.ident, value);
     }
 
     removeValue(value){
@@ -278,15 +281,25 @@ class Select extends Component{
 
     }
 
-    handleInputBlur(){
+    handleInputBlur(event){
+        console.log('blur');
+    }
+
+    handleInputChange(event){
 
     }
 
-    handleInputChange(){
-
-    }
-
-    handleInputFocus(){
+    handleInputFocus(event) {
+        if (this.props.disabled) return;
+        //后续补充
+        const showDropdown = this.state.showDropdown;
+        if(this.props.onFocus){
+            this.props.onFocus(event);
+        }
+        this.setState({
+            isFocused: true,
+            showDropdown: showDropdown
+        });
 
     }
 
@@ -402,6 +415,8 @@ class Select extends Component{
                 return (
                     <ValueComponent
                         id={ident + '_value_' + i}
+                        //dom diff
+                        key={ident + '_value_' + i}
                         disabled={disabled}
                         option={value}
                         onClick={onClick}
@@ -461,7 +476,7 @@ class Select extends Component{
     }
 
     renderInput(valueArray, focusedOptionIndex){
-
+        console.log('renderInput');
         const showDropdown = this.state.showDropdown;
 
         const prefixCls= this.props.prefixCls;
@@ -530,7 +545,7 @@ class Select extends Component{
 
         return (
             <div className={styles[`${prefixCls}-input`]}>
-                <input {...inputProps}/>
+                <input {...inputProps} placeholder={this.props.placeholder}/>
             </div>
         );
     }
