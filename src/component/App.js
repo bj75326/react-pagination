@@ -26,6 +26,7 @@ class App extends Component {
     }
     //simpleValue set as true.
     onChange(ident, value){
+        console.log('onChange');
         console.log(value);
         this.setState({
             [ident]: {selectedValue: value}

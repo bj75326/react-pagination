@@ -7,6 +7,7 @@ import {render} from 'react-dom';
 //import AutosizeInput from './component/AutosizeInput.js';
 //import TestAutoSizeInput from '../test/testAutoSizeInput.js';
 //import InputChange from '../test/InputChange.js';
+//import StopPropagationTest from '../test/stopPropagationTest.js';
 
 import App from './component/App.js';
 

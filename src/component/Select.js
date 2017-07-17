@@ -34,8 +34,14 @@ class Select extends Component{
     constructor(props){
         super(props);
 
+        let inputValue = '';
+        if(!this.props.multi && this.props.searchable){
+            inputValue = this.getValueArray(this.props.selectedValue)[0][this.props.labelKey];
+            console.log(inputValue);
+        }
+
         this.state = {
-            inputValue : '',
+            inputValue : inputValue,
             showDropdown : false,
             isFocused: false,
             required: false,
@@ -67,7 +73,9 @@ class Select extends Component{
         joinValues: false,
 
         valueComponent: Value,
-        simpleValue: false
+        simpleValue: false,
+
+        onBlurResetsInput: true
     };
 
     static PropTypes = {
@@ -118,6 +126,8 @@ class Select extends Component{
         tabIndex: PropTypes.string,                 //tab index
 
         onFocus: PropTypes.func,                    //select input(div)获取焦点回调句柄
+        onBlur: PropTypes.func,                     //select input(div)失去焦点回调句柄
+        onBlurResetsInput: PropTypes.bool,          //select input(div)失去焦点时是否清空输入内容
     };
 
     componentDidMount(){
@@ -164,18 +174,28 @@ class Select extends Component{
         if(this.props.disabled || event.button !== 0){
             return;
         }
+        //MouseDown事件如果发生在input上，默认操作
+        //if(event.target.tagName === 'INPUT'){
+        //    return;
+        //}
 
         //阻止冒泡与默认行为
         event.stopPropagation();
         event.preventDefault();
-
+        /*
         if(!this.props.searchable){
             this.focus();
             this.toggleDropdownClass();
             return;
+        }*/
+
+        if(!this.state.showDropdown){
+            this.focus();
+            this.openDropdown();
+        }else{
+            this.blurInput();
+            this.closeDropdown();
         }
-
-
 
     }
 
@@ -201,6 +221,28 @@ class Select extends Component{
                 dropdownClassList.add(styles['slide-up-leave-active']);
             }, 0);
         }
+    }
+
+    openDropdown() {
+        if (!this.dropdown) return;
+
+        const {prefixCls} = this.props;
+        const dropdownClassList = this.dropdown.classList;
+
+        this.setState({showDropdown: true});
+        dropdownClassList.remove(styles['slide-up-leave-active']);
+        dropdownClassList.add(styles[`${prefixCls}-dropdown-active`]);
+        dropdownClassList.add(styles['slide-up-enter-active']);
+    }
+
+    closeDropdown(){
+        if(!this.dropdown) return;
+
+        const dropdownClassList = this.dropdown.classList;
+
+        this.setState({showDropdown: false});
+        dropdownClassList.remove(styles['slide-up-enter-active']);
+        dropdownClassList.add(styles['slide-up-leave-active']);
     }
 
     //this.input 获取焦点
@@ -283,24 +325,45 @@ class Select extends Component{
 
     handleInputBlur(event){
         console.log('blur');
+        if(this.dropdown && (this.dropdown === document.activeElement || this.dropdown.contains(document.activeElement))){
+            this.focus();
+            return;
+        }
+        if(this.props.onBlur){
+            this.props.onBlur(event);
+        }
+
+        const onBlurredState = {
+            isFocused: false,
+            isPseudoFocused: false
+        };
+
+        if(this.props.onBlurResetsInput){
+            //onBlurredState.inputValue = this.handleInputValueChange('');
+        }
+
+        this.setState(onBlurredState);
     }
 
     handleInputChange(event){
 
     }
 
+    handleInputValueChange(){
+
+    }
+
     handleInputFocus(event) {
         if (this.props.disabled) return;
         //后续补充
-        const showDropdown = this.state.showDropdown;
+        //const showDropdown = this.state.showDropdown;
         if(this.props.onFocus){
             this.props.onFocus(event);
         }
         this.setState({
             isFocused: true,
-            showDropdown: showDropdown
+            //showDropdown: showDropdown
         });
-
     }
 
     //根据输入值筛选options
@@ -397,7 +460,7 @@ class Select extends Component{
     }
 
     renderValue(valueArray, showDropdown){
-        console.log(valueArray);
+        //console.log(valueArray);
         let renderLabel = this.props.valueRenderer || this.getOptionLabel.bind(this);
         let ValueComponent = this.props.valueComponent;
 
@@ -476,7 +539,7 @@ class Select extends Component{
     }
 
     renderInput(valueArray, focusedOptionIndex){
-        console.log('renderInput');
+        //console.log('renderInput');
         const showDropdown = this.state.showDropdown;
 
         const prefixCls= this.props.prefixCls;
@@ -551,6 +614,7 @@ class Select extends Component{
     }
 
     render(){
+        console.log('render!');
         //根据selectedValue获取已选择option对象数组。
         let valueArray = this.getValueArray(this.props.selectedValue);
 
@@ -576,6 +640,7 @@ class Select extends Component{
 
 
         const showDropdown = this.state.showDropdown;
+        const isFocused = this.state.isFocused;
 
         const {className, prefixCls} = this.props;
 
@@ -584,7 +649,8 @@ class Select extends Component{
             [styles[className]]: !!className,
             [styles[`${prefixCls}-single`]]: !multi,
             [styles[`${prefixCls}-multiple`]]: multi,
-            [styles[`${prefixCls}-visible`]]: showDropdown
+            [styles[`${prefixCls}-visible`]]: showDropdown,
+            [styles[`${prefixCls}-focus`]]: isFocused
         });
 
         return (

@@ -41,6 +41,13 @@
     min-height: 32px;
 }
 
+.bin-select-focus .bin-select-control{
+    border-color: #247db0;
+    outline: 0;
+    box-shadow: 0 0 0 2px rgba(45,140,240,.2);
+}
+
+/*暂留*/
 .bin-select-visible .bin-select-control{
     border-color: #247db0;
     outline: 0;
