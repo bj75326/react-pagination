@@ -47,13 +47,6 @@
     box-shadow: 0 0 0 2px rgba(45,140,240,.2);
 }
 
-/*暂留*/
-.bin-select-visible .bin-select-control{
-    border-color: #247db0;
-    outline: 0;
-    box-shadow: 0 0 0 2px rgba(45,140,240,.2);
-}
-
 .bin-select-multiple .bin-select-value-wrapper{
     display: -webkit-box;
     display: -webkit-flex;
@@ -163,6 +156,12 @@
 }
 .bin-select-multiple .bin-select-input>input{
     width: 100%;
+}
+
+.bin-select-pseudoFocus .bin-select-input>input{
+    color: transparent;
+    /*text-shadow:0 0 0 #495060;*/
+    text-shadow: 0 0 0 red;
 }
 
 .bin-select-clean-zone, .bin-select-arrow-zone{

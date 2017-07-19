@@ -36,8 +36,8 @@ class Select extends Component{
 
         let inputValue = '';
         if(!this.props.multi && this.props.searchable){
-            inputValue = this.getValueArray(this.props.selectedValue)[0][this.props.labelKey];
-            console.log(inputValue);
+            const valueArray = this.getValueArray(this.props.selectedValue);
+            inputValue = valueArray[0] ? valueArray[0][this.props.labelKey] : '';
         }
 
         this.state = {
@@ -75,7 +75,12 @@ class Select extends Component{
         valueComponent: Value,
         simpleValue: false,
 
-        onBlurResetsInput: true
+        onBlurResetsInput: true,
+        backspaceRemoves: true,
+        tabSelectsValue: true,
+        clearable: true,
+        escapeClearsValue: true,
+        onCloseResetsInput: true,
     };
 
     static PropTypes = {
@@ -127,7 +132,16 @@ class Select extends Component{
 
         onFocus: PropTypes.func,                    //select input(div)获取焦点回调句柄
         onBlur: PropTypes.func,                     //select input(div)失去焦点回调句柄
-        onBlurResetsInput: PropTypes.bool,          //select input(div)失去焦点时是否清空输入内容
+        onBlurResetsInput: PropTypes.bool,          //select input 失去焦点时是否清空输入内容
+        onInputChange: PropTypes.func,              //select input value改变回调句柄
+        onInputKeyDown: PropTypes.func,             //select control 键盘事件回调句柄
+
+        backspaceRemoves: PropTypes.bool,           //backSpace 按键是否移除selected value
+        tabSelectsValue: PropTypes.bool,            //tab 按键是否触发select 当前焦点选项
+
+        clearable: PropTypes.bool,                  //select 已选值是否可以清除
+        escapeClearsValue: PropTypes.bool,          //esc按键清除已选值
+        onCloseResetsInput: PropTypes.bool,         //select input closeDropdown时是否清空输入内容
     };
 
     componentDidMount(){
@@ -157,6 +171,18 @@ class Select extends Component{
         }
     }
 
+    componentWillReceiveProps(){
+
+    }
+
+    componentWillUpdate(){
+
+    }
+
+    componentDidUpdate(){
+
+    }
+
     handleValueClick(option, event){
         if(!this.props.onValueClick){
             return;
@@ -164,12 +190,76 @@ class Select extends Component{
         this.props.onValueClick(option, event);
     }
 
-    handleKeyDown(){
+    handleKeyDown(event){
+        if(this.props.disabled) return;
+
+        if(this.props.onInputKeyDown){
+            this.props.onInputKeyDown(event);
+            if(event.defaultPrevented){
+                return;
+            }
+        }
+
+        switch(event.keyCode) {
+            case 8: //backspace
+                if (!this.state.inputValue && this.props.backspaceRemoves) {
+                    event.preventDefault();
+                    this.popValue();
+                }
+                return;
+            case 9: //tab
+                if (event.shiftKey || !this.state.showDropdown || !this.props.tabSelectsValue) {
+                    return;
+                }
+                this.selectFocusedOption();
+                return;
+            case 13: //enter
+                if (!this.state.showDropdown) return;
+                event.stopPropagation();
+                this.selectFocusedOption();
+                break;
+            case 27: //escape
+                if(this.state.showDropdown){
+                    this.closeDropdown();
+                }else if(this.props.clearable && this.props.escapeClearsValue){
+                    this.clearValue(event);
+                    event.stopPropagation();
+                }
+                break;
+            case 38: //up
+                this.focusPrevOption();
+                break;
+            case 40: //down
+                this.focusNextOption();
+                break;
+            case 33: //page up
+                this.focusPageUpOption();
+                break;
+            case 34: //page down
+                this.focusPageDownOption();
+                break;
+            case 35: //end key
+                if(event.shiftKey) return;
+                this.focusEndOption();
+                break;
+            case 36: //home key
+                if(event.shiftKey) return;
+                this.focusStartOption();
+                break;
+            case 46: //delete
+                if(!this.state.inputValue && this.props.backspaceRemoves){
+                    event.preventDefault();
+                    this.popValue();
+                }
+                return;
+            default: return;
+        }
+
+        event.preventDefault();
 
     }
 
     handleMouseDown(event){
-        console.log('mousedown');
         //如果select组件为disabled，或者不为左键点击，不作处理
         if(this.props.disabled || event.button !== 0){
             return;
@@ -192,10 +282,59 @@ class Select extends Component{
         if(!this.state.showDropdown){
             this.focus();
             this.openDropdown();
+
+            if(this.state.inputValue.length > 0){
+                let input = this.input;
+                if(typeof input.getInput === 'function'){
+                    input = input.getInput;
+                }
+                input.select();
+            }
+
         }else{
             this.blurInput();
-            this.closeDropdown();
+            //this.closeDropdown();
         }
+
+    }
+
+    handleTouchStart(){
+
+    }
+
+    handleTouchMove(){
+
+    }
+
+    handleTouchEnd(){
+
+    }
+
+    selectFocusedOption(){
+
+    }
+
+    focusPrevOption(){
+
+    }
+
+    focusNextOption(){
+
+    }
+
+    focusPageUpOption(){
+
+    }
+
+    focusPageDownOption(){
+
+    }
+
+    focusEndOption(){
+
+    }
+
+    focusStartOption(){
 
     }
 
@@ -239,8 +378,19 @@ class Select extends Component{
         if(!this.dropdown) return;
 
         const dropdownClassList = this.dropdown.classList;
+        let inputValue = '';
 
-        this.setState({showDropdown: false});
+        if(!this.props.multi && this.props.searchable){
+            inputValue = this.resetInputValue();
+        }else if(this.props.searchable && this.props.onCloseResetsInput){
+            inputValue = this.handleInputValueChange('')
+        }
+
+        this.setState({
+            showDropdown: false,
+            inputValue: inputValue,
+            isPseudoFocused: this.state.isFocused && !this.props.multi
+        });
         dropdownClassList.remove(styles['slide-up-enter-active']);
         dropdownClassList.add(styles['slide-up-leave-active']);
     }
@@ -323,9 +473,17 @@ class Select extends Component{
 
     }
 
+    //可输入单选在 closeDropdown blurInput 时，需要reset inputValue
+    resetInputValue(){
+        const valueArray = this.getValueArray(this.props.selectedValue);
+        const inputValue = valueArray[0] ? this.handleInputValueChange(valueArray[0][this.props.labelKey]) : this.handleInputValueChange('');
+        return inputValue;
+    }
+
     handleInputBlur(event){
-        console.log('blur');
+        console.log('handleInputBlur');
         if(this.dropdown && (this.dropdown === document.activeElement || this.dropdown.contains(document.activeElement))){
+            console.log('click options');
             this.focus();
             return;
         }
@@ -338,22 +496,46 @@ class Select extends Component{
             isPseudoFocused: false
         };
 
-        if(this.props.onBlurResetsInput){
-            //onBlurredState.inputValue = this.handleInputValueChange('');
+
+        if(!this.props.multi && this.props.searchable){
+
+            onBlurredState.inputValue = this.resetInputValue();
+
+        }else if(this.props.onBlurResetsInput){
+
+            onBlurredState.inputValue = this.handleInputValueChange('');
+
         }
+        //input blur 时需要关闭dropdown
+        this.closeDropdown();
 
         this.setState(onBlurredState);
     }
 
     handleInputChange(event){
-
+        let newInputValue = event.target.value;
+        if(this.state.inputValue !== newInputValue){
+            newInputValue = this.handleInputValueChange(newInputValue);
+        }
+        this.setState({
+            inputValue: newInputValue,
+            isPseudoFocused: false
+        });
+        this.openDropdown();
     }
 
-    handleInputValueChange(){
-
+    handleInputValueChange(newValue){
+        if(this.props.onInputChange){
+            let nextState = this.props.onInputChange(newValue);
+            if(nextState != null && typeof nextState !== 'object'){
+                newValue = '' + nextState;
+            }
+        }
+        return newValue;
     }
 
     handleInputFocus(event) {
+        console.log('handleInputFocus');
         if (this.props.disabled) return;
         //后续补充
         //const showDropdown = this.state.showDropdown;
@@ -362,6 +544,7 @@ class Select extends Component{
         }
         this.setState({
             isFocused: true,
+            isPseudoFocused: false
             //showDropdown: showDropdown
         });
     }
@@ -613,6 +796,14 @@ class Select extends Component{
         );
     }
 
+    renderClear(){
+
+    }
+
+    renderArrow(){
+
+    }
+
     render(){
         console.log('render!');
         //根据selectedValue获取已选择option对象数组。
@@ -641,6 +832,7 @@ class Select extends Component{
 
         const showDropdown = this.state.showDropdown;
         const isFocused = this.state.isFocused;
+        const isPseudoFocused = this.state.isPseudoFocused;
 
         const {className, prefixCls} = this.props;
 
@@ -650,7 +842,8 @@ class Select extends Component{
             [styles[`${prefixCls}-single`]]: !multi,
             [styles[`${prefixCls}-multiple`]]: multi,
             [styles[`${prefixCls}-visible`]]: showDropdown,
-            [styles[`${prefixCls}-focus`]]: isFocused
+            [styles[`${prefixCls}-focus`]]: isFocused,
+            [styles[`${prefixCls}-pseudoFocus`]]: isPseudoFocused
         });
 
         return (
@@ -661,12 +854,16 @@ class Select extends Component{
                      style={this.props.style}
                      onKeyDown={this.handleKeyDown.bind(this)}
                      onMouseDown={this.handleMouseDown.bind(this)}
+                     onTouchStart={this.handleTouchStart.bind(this)}
+                     onTouchMove={this.handleTouchMove.bind(this)}
+                     onTouchEnd={this.handleTouchEnd.bind(this)}
                 >
                     <span className={styles[`${prefixCls}-value-wrapper`]}>
                         {this.renderValue(valueArray, showDropdown)}
                         {this.renderInput(valueArray, focusedOptionIndex)}
                     </span>
                     <span className={styles[`${prefixCls}-clean-zone`]}>
+                        {this.renderClear()}
                         <span className={styles[`${prefixCls}-clean`]}><FontAwesome name="times-circle"/></span>
                     </span>
                     <span className={styles[`${prefixCls}-arrow-zone`]}>
