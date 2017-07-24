@@ -30,6 +30,8 @@ class App extends Component {
         console.log(value);
         this.setState({
             [ident]: {selectedValue: value}
+        }, ()=>{
+            console.log(this.state);
         });
         console.log(this.state);
     }

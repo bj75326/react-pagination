@@ -32,7 +32,8 @@ class Value extends Component {
         //      className: ...,
         //      title: ...,
         //      href: ...,
-        //      target: ...
+        //      target: ...,
+        //      disabled: ...
         // }
 
     };

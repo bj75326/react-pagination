@@ -11,6 +11,9 @@ import Value from './Value.js';
 import styles from './style.css';
 
 import defaultFilterOptions from '../utils/defaultFilterOptions.js';
+import defaultClearRenderer from '../utils/defaultClearRenderer.js';
+import defaultArrowRenderer from '../utils/defaultArrowRenderer.js';
+import defaultMenuRenderer from '../utils/defaultMenuRenderer.js';
 
 import TransitionEventsHandler from '../utils/TransitionEventsHandler.js';
 
@@ -28,6 +31,11 @@ const stringifyValue = value => {
         return '';
     }
 };
+
+const stringOrNode = PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.node
+]);
 
 class Select extends Component{
 
@@ -81,6 +89,15 @@ class Select extends Component{
         clearable: true,
         escapeClearsValue: true,
         onCloseResetsInput: true,
+
+        clearRenderer: defaultClearRenderer,
+        arrowRenderer: defaultArrowRenderer,
+        clearAllText: 'Clear All',
+        clearValueText: 'Clear Value',
+
+        noResultText: '无匹配数据',
+        menuRenderer: defaultMenuRenderer,
+        optionComponent: Option,
     };
 
     static PropTypes = {
@@ -142,6 +159,19 @@ class Select extends Component{
         clearable: PropTypes.bool,                  //select 已选值是否可以清除
         escapeClearsValue: PropTypes.bool,          //esc按键清除已选值
         onCloseResetsInput: PropTypes.bool,         //select input closeDropdown时是否清空输入内容
+
+        clearRenderer: PropTypes.func,              //用来渲染clear 的函数
+        arrowRenderer: PropTypes.func,              //用来渲染arrow 的函数
+        clearAllText: stringOrNode,                 //指示用来清除所有selected value
+        clearValueText: stringOrNode,               //指示用来清除当前selected value
+        resetValue: PropTypes.any,                  //默认clearValue时的重置值
+
+        dropdownStyle: PropTypes.object,            //dropdown自定义行内样式
+        noResultText: stringOrNode,                 //没有可以匹配的option 时所要渲染的内容
+        menuRenderer: PropTypes.func,               //用来渲染dropdown 的函数
+        optionClassName: PropTypes.string,          //option自定义css 类
+        optionComponent: PropTypes.func,            //用来渲染option的react component
+        optionRenderer: PropTypes.func,             //自定义渲染option的fn
     };
 
     componentDidMount(){
@@ -298,6 +328,10 @@ class Select extends Component{
 
     }
 
+    handleMouseDownOnMenu(){
+
+    }
+
     handleTouchStart(){
 
     }
@@ -307,6 +341,10 @@ class Select extends Component{
     }
 
     handleTouchEnd(){
+
+    }
+
+    handleTouchEndClearValue(){
 
     }
 
@@ -374,7 +412,7 @@ class Select extends Component{
         dropdownClassList.add(styles['slide-up-enter-active']);
     }
 
-    closeDropdown(){
+    closeDropdown(nextState){
         if(!this.dropdown) return;
 
         const dropdownClassList = this.dropdown.classList;
@@ -386,10 +424,15 @@ class Select extends Component{
             inputValue = this.handleInputValueChange('')
         }
 
+        inputValue = nextState ? nextState.inputValue : inputValue;
+        const isFocused = nextState ? nextState.isFocused : this.state.isFocused;
+
+        console.log(inputValue);
+
         this.setState({
             showDropdown: false,
             inputValue: inputValue,
-            isPseudoFocused: this.state.isFocused && !this.props.multi
+            isPseudoFocused: isFocused && !this.props.multi
         });
         dropdownClassList.remove(styles['slide-up-enter-active']);
         dropdownClassList.add(styles['slide-up-leave-active']);
@@ -404,6 +447,12 @@ class Select extends Component{
     blurInput(){
         if(!this.input) return;
         this.input.blur();
+    }
+    //指定某个option获取焦点
+    focusOption(option){
+        this.setState({
+            focusedOption: option
+        });
     }
 
     //根据value获取相应option对象的数组
@@ -469,8 +518,31 @@ class Select extends Component{
 
     }
 
-    clearValue(){
+    selectValue(){
 
+    }
+
+    clearValue(event){
+        if(event && event.type === 'mousedown' && event.button !== 0){
+            return;
+        }
+        event.stopPropagation();
+        event.preventDefault();
+        this.setValue(this.getResetValue());
+        setTimeout(()=>{
+            this.closeDropdown();
+            this.focus();
+        }, 0);
+    }
+
+    getResetValue(){
+        if(this.props.resetValue !== undefined){
+            return this.props.resetValue;
+        }else if(this.props.multi){
+            return [];
+        }else{
+            return null;
+        }
     }
 
     //可输入单选在 closeDropdown blurInput 时，需要reset inputValue
@@ -507,7 +579,7 @@ class Select extends Component{
 
         }
         //input blur 时需要关闭dropdown
-        this.closeDropdown();
+        this.closeDropdown(onBlurredState);
 
         this.setState(onBlurredState);
     }
@@ -796,12 +868,104 @@ class Select extends Component{
         );
     }
 
-    renderClear(){
+    //<span className={styles[`${prefixCls}-clean`]}><FontAwesome name="times-circle"/></span>
+    renderClear(valueArray){
+        if(!this.props.clearable || !valueArray.length || this.props.disabled) return;
 
+        const clear = this.props.clearRenderer();
+
+        return (
+            <span className={styles[`${this.props.prefixCls}-clean-zone`]}
+                  title={this.props.multi ? this.props.clearAllText : this.props.clearValueText}
+                  aria-label={this.props.multi ? this.props.clearAllText : this.props.clearValueText}
+                  onMouseDown={this.clearValue.bind(this)}
+                  onTouchStart={this.handleTouchStart.bind(this)}
+                  onTouchMove={this.handleTouchMove.bind(this)}
+                  onTouchEnd={this.handleTouchEndClearValue.bind(this)}
+            >
+                <span className={styles[`${this.props.prefixCls}-clean`]}>
+                    {clear}
+                </span>
+            </span>
+        );
     }
 
+    //<span className={styles[`${prefixCls}-arrow`]}><FontAwesome name="caret-down"/></span>
     renderArrow(){
 
+        const arrow = this.props.arrowRenderer();
+
+        return (
+            <span className={styles[`${this.props.prefixCls}-arrow-zone`]}>
+                <span className={styles[`${this.props.prefixCls}-arrow`]}>
+                    {arrow}
+                </span>
+            </span>
+        );
+    }
+
+    onOptionRef(ref, isFocused){
+        if(isFocused){
+            this.focused = ref;
+        }
+    }
+
+    renderMenu(options, valueArray, focusedOption){
+        if(options && options.length){
+            return this.props.menuRenderer({
+                focusedOption,
+                focusOption: this.focusOption.bind(this),
+                ident: this.props.ident,
+                prefixCls: this.props.prefixCls,
+                labelKey: this.props.labelKey,
+                onFocus: this.focusOption.bind(this),
+                onSelect: this.selectValue.bind(this),
+                optionClassName: this.props.optionClassName,
+                optionComponent: this.props.optionComponent,
+                optionRenderer: this.props.optionRenderer || this.getOptionLabel.bind(this),
+                options,
+                selectValue: this.selectValue.bind(this),
+                valueArray,
+                valueKey: this.props.valueKey,
+                onOptionRef: this.onOptionRef.bind(this)
+            });
+        }else if(this.props.noResultText){
+            return (
+                <ul className={styles[`${this.props.prefixCls}-not-found`]}>
+                    <li>{this.props.noResultText}</li>
+                </ul>
+            );
+        }else{
+            return null;
+        }
+    }
+
+    renderDropdown(options, valueArray, focusedOption){
+
+        let dropdownStyle = {
+            position: 'absolute',
+            left: '0px',
+            transformOrigin: 'center top 0px'
+        };
+        if(this.control){
+            dropdownStyle.width = this.control.offsetWidth + 'px';
+            dropdownStyle.top = this.control.offsetHeight + 'px';
+        }
+
+        if(this.props.dropdownStyle){
+            Object.assign(dropdownStyle, this.props.dropdownStyle);
+        }
+
+        const menu = this.renderMenu(options, valueArray, focusedOption);
+
+        return (
+            <div ref={ref=>{this.dropdown = ref}} className={`${this.props.prefixCls}-dropdown`} style={dropdownStyle}
+                 role="listbox" id={this.props.ident + '-list'}
+                 onMouseDown={this.handleMouseDownOnMenu.bind(this)}
+            >
+                {menu}
+            </div>
+        );
     }
 
     render(){
@@ -862,14 +1026,10 @@ class Select extends Component{
                         {this.renderValue(valueArray, showDropdown)}
                         {this.renderInput(valueArray, focusedOptionIndex)}
                     </span>
-                    <span className={styles[`${prefixCls}-clean-zone`]}>
-                        {this.renderClear()}
-                        <span className={styles[`${prefixCls}-clean`]}><FontAwesome name="times-circle"/></span>
-                    </span>
-                    <span className={styles[`${prefixCls}-arrow-zone`]}>
-                        <span className={styles[`${prefixCls}-arrow`]}><FontAwesome name="caret-down"/></span>
-                    </span>
+                    {this.renderArrow()}
+                    {this.renderClear(valueArray)}
                 </div>
+                {this.renderDropdown(options, multi ? valueArray : null, focusedOption)}
 
                 <div className={styles[`${prefixCls}-dropdown`]} ref={ref=>{this.dropdown = ref}}
                                                                 style={{width:'200px',

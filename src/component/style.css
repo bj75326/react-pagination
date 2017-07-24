@@ -26,10 +26,19 @@
     cursor: pointer;
     position: relative;
     transition: all .2s ease-in-out;
+    overflow: hidden;
 }
 
 .bin-select-control:hover{
     border-color: #247db0;
+}
+
+.bin-select-control .bin-select-clean-zone{
+    display: none;
+}
+
+.bin-select-control:hover .bin-select-clean-zone{
+    display: inline-block;
 }
 
 .bin-select-single .bin-select-control{
@@ -173,10 +182,7 @@
     color: #80848f;
     height: 100%;
     width: 24px;
-}
-
-.bin-select-clean-zone{
-    display: none;
+    background-color: #fff;
 }
 
 .bin-select-clean, .bin-select-arrow{
@@ -189,14 +195,6 @@
 
 .bin-select-clean{
     right: 6px;
-}
-
-.bin-select-show-clear .bin-select-clean-zone{
-    display: inline-block;
-}
-
-.bin-select-show-clear .bin-select-arrow-zone{
-    display: none;
 }
 
 .bin-select-visible .bin-select-arrow{
