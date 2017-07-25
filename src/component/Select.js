@@ -510,16 +510,44 @@ class Select extends Component{
         this.focus();
     }
 
-    addValue(){
-
+    addValue(value){
+        let valueArray = this.getValueArray(this.props.selectedValue);
+        const visibleOptions = this._visibleOptions.filter(val=>{
+            return !val.disabled;
+        });
+        const lastValueIndex = visibleOptions.indexOf(value);
+        this.setValue(valueArray.concat(value));
+        if(visibleOptions.length - 1 === lastValueIndex){
+            this.focusOption(visibleOptions[lastValueIndex - 1]);
+        }else if(visibleOptions.length > lastValueIndex){
+            this.focusOption(visibleOptions[lastValueIndex + 1]);
+        }
     }
 
     popValue(){
-
+        let valueArray = this.getValueArray(this.props.selectedValue);
+        if(!valueArray.length) return;
+        if(valueArray[valueArray.length - 1].clearableValue === false) return;
+        this.setValue(this.props.multi ? valueArray.slice(0, valueArray.length - 1) : null);
     }
 
-    selectValue(){
-
+    selectValue(value){
+        if(this.props.multi){
+            this.setState({
+                inputValue: this.handleInputValueChange(''),
+                focusedOption: null
+            }, ()=>{
+                this.addValue(value);
+            });
+        }else{
+            this.setState({
+                showDropdown: false,
+                inputValue: this.handleInputValueChange(''),
+                isPseudoFocused: false,
+            }, ()=>{
+                this.setValue(value);
+            });
+        }
     }
 
     clearValue(event){
@@ -959,7 +987,7 @@ class Select extends Component{
         const menu = this.renderMenu(options, valueArray, focusedOption);
 
         return (
-            <div ref={ref=>{this.dropdown = ref}} className={`${this.props.prefixCls}-dropdown`} style={dropdownStyle}
+            <div ref={ref=>{this.dropdown = ref}} className={styles[`${this.props.prefixCls}-dropdown`]} style={dropdownStyle}
                  role="listbox" id={this.props.ident + '-list'}
                  onMouseDown={this.handleMouseDownOnMenu.bind(this)}
             >
@@ -1030,27 +1058,6 @@ class Select extends Component{
                     {this.renderClear(valueArray)}
                 </div>
                 {this.renderDropdown(options, multi ? valueArray : null, focusedOption)}
-
-                <div className={styles[`${prefixCls}-dropdown`]} ref={ref=>{this.dropdown = ref}}
-                                                                style={{width:'200px',
-                                                                 position: 'absolute',
-                                                                 top: '32px',
-                                                                 left: '0px',
-                                                                 transformOrigin: 'center top 0px'
-                                                                }}>
-                    <ul className={styles[`${prefixCls}-not-found`]} style={{ display: 'none'}}>
-                        <li>无匹配数据</li>
-                    </ul>
-                    <ul className={styles[`${prefixCls}-dropdown-list`]} >
-                        <li className={styles[`${prefixCls}-item`]}>北京市</li>
-                        <li className={styles[`${prefixCls}-item`] +' '+styles[`${prefixCls}-item-selected`]}>上海市</li>
-                        <li className={styles[`${prefixCls}-item`]}>深圳市</li>
-                        <li className={styles[`${prefixCls}-item`]}>杭州市</li>
-                        <li className={styles[`${prefixCls}-item`]}>南京市</li>
-                        <li className={styles[`${prefixCls}-item`]}>重庆市</li>
-                    </ul>
-                    <ul className={styles[`${prefixCls}-loading`]} style={{display: 'none'}}>加载中</ul>
-                </div>
             </div>
         );
     }
