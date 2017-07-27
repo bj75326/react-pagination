@@ -306,14 +306,14 @@
     background-color: #f3f3f3;
 }
 
-.bin-select-multiple .bin-select-item i{
+.bin-select-multiple .bin-select-item span:last-child{
     float: right;
     padding-top: 3px;
     display: none;
     opacity: .66;
 }
 
-.bin-select-multiple .bin-select-item.bin-select-item-selected i{
+.bin-select-multiple .bin-select-item.bin-select-item-selected span:last-child{
     display: inline-block;
 }
 

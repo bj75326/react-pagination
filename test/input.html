@@ -5,6 +5,7 @@
     <title>input</title>
 </head>
 <body>
+<button>Click Me</button>
 <div>
     <input type="text" style="width: 50px; color: transparent; text-shadow:0 0 0 red;" value=''/>
 </div>
@@ -21,6 +22,7 @@
 </div>
 <script type="text/javascript">
     const input = document.querySelector('input');
+    const button = document.querySelector('button');
     input.addEventListener('change', ()=>{
         console.log('changed');
     }, false);
@@ -28,11 +30,20 @@
     input.addEventListener('focus', ()=>{
         console.log('focused');
     });
+    button.addEventListener('click', (event)=>{
+        if(document.activeElement === input){
+            input.blur();
+        }else{
+            input.focus();
+        }
+    });
 
     const select = document.querySelector('select');
     select.addEventListener('keydown', ()=>{
         console.log('keydown');
     });
+
+
 </script>
 </body>
 </html>

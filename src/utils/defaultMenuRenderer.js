@@ -3,11 +3,13 @@
 import React from 'react';
 import classnames from 'classnames';
 import styles from '../component/style.css';
+import FontAwesome from 'react-fontawesome';
 
 const menuRenderer = ({
     focusedOption,
     ident,
     prefixCls,
+    multi,
     labelKey,
     onFocus,
     onSelect,
@@ -47,7 +49,8 @@ const menuRenderer = ({
                             optionIndex={i}
                             ref={ref=>{onOptionRef(ref, isFocused)}} //Select.js 中可以获取 this.focused
                         >
-                            {optionRenderer(option, i)}
+                            <span>{optionRenderer(option, i)}</span>
+                            {multi? <FontAwesome name="check"/> : null}
                         </Option>
                     );
                 })

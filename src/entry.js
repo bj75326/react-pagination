@@ -9,6 +9,7 @@ import {render} from 'react-dom';
 //import InputChange from '../test/InputChange.js';
 //import StopPropagationTest from '../test/stopPropagationTest.js';
 //import SetStateCallback from '../test/setStateCallback.js';
+//import RefTest from '../test/refTest';
 
 import App from './component/App.js';
 

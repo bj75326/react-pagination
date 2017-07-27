@@ -308,7 +308,8 @@ class Select extends Component{
             this.toggleDropdownClass();
             return;
         }*/
-
+        console.log('multi debug');
+        console.log(this.state.showDropdown);
         if(!this.state.showDropdown){
             this.focus();
             this.openDropdown();
@@ -445,6 +446,7 @@ class Select extends Component{
     }
     //this.input 失去焦点
     blurInput(){
+        console.log(this.input);
         if(!this.input) return;
         this.input.blur();
     }
@@ -507,7 +509,10 @@ class Select extends Component{
     removeValue(value){
         let valueArray = this.getValueArray(this.props.selectedValue);
         this.setValue(valueArray.filter(i=> i !== value));
-        this.focus();
+        //to fix multi input unmount issue
+        setTimeout(()=>{
+            this.focus();
+        }, 0);
     }
 
     addValue(value){
@@ -522,6 +527,10 @@ class Select extends Component{
         }else if(visibleOptions.length > lastValueIndex){
             this.focusOption(visibleOptions[lastValueIndex + 1]);
         }
+        //to fix multi input unmount issue
+        setTimeout(()=>{
+            this.focus();
+        }, 0);
     }
 
     popValue(){
@@ -540,10 +549,12 @@ class Select extends Component{
                 this.addValue(value);
             });
         }else{
+            let inputValue = this.getOptionLabel(value) || '';
+            this.closeDropdown();
             this.setState({
-                showDropdown: false,
-                inputValue: this.handleInputValueChange(''),
-                isPseudoFocused: false,
+                //showDropdown: false,
+                inputValue: this.handleInputValueChange(inputValue),
+                isPseudoFocused: true
             }, ()=>{
                 this.setValue(value);
             });
@@ -582,6 +593,8 @@ class Select extends Component{
 
     handleInputBlur(event){
         console.log('handleInputBlur');
+        console.log(document.activeElement);
+        console.log(this.input);
         if(this.dropdown && (this.dropdown === document.activeElement || this.dropdown.contains(document.activeElement))){
             console.log('click options');
             this.focus();
@@ -613,6 +626,7 @@ class Select extends Component{
     }
 
     handleInputChange(event){
+        this.filterSlient = false;
         let newInputValue = event.target.value;
         if(this.state.inputValue !== newInputValue){
             newInputValue = this.handleInputValueChange(newInputValue);
@@ -635,13 +649,13 @@ class Select extends Component{
     }
 
     handleInputFocus(event) {
-        console.log('handleInputFocus');
         if (this.props.disabled) return;
         //后续补充
         //const showDropdown = this.state.showDropdown;
         if(this.props.onFocus){
             this.props.onFocus(event);
         }
+        this.filterSlient = true;
         this.setState({
             isFocused: true,
             isPseudoFocused: false
@@ -945,6 +959,7 @@ class Select extends Component{
                 focusOption: this.focusOption.bind(this),
                 ident: this.props.ident,
                 prefixCls: this.props.prefixCls,
+                multi: this.props.multi,
                 labelKey: this.props.labelKey,
                 onFocus: this.focusOption.bind(this),
                 onSelect: this.selectValue.bind(this),
@@ -1007,7 +1022,7 @@ class Select extends Component{
         const multi = this.props.multi;
         //searchable === false, 不进行filterOptions，所有options显示
         //searchable === true, 进行filterOptions
-        if(searchable === false){
+        if(searchable === false || this.filterSlient === true){
             options = this._visibleOptions = this.props.options;
         }else{
             options = this._visibleOptions = this.filterOptions(multi ? this.getValueArray(this.props.selectedValue): null);
@@ -1057,7 +1072,7 @@ class Select extends Component{
                     {this.renderArrow()}
                     {this.renderClear(valueArray)}
                 </div>
-                {this.renderDropdown(options, multi ? valueArray : null, focusedOption)}
+                {this.renderDropdown(options, valueArray, focusedOption)}
             </div>
         );
     }
