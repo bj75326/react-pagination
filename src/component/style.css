@@ -63,6 +63,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    align-content: center;
 }
 
 .bin-select-single .bin-select-control .bin-select-placeholder,
@@ -161,7 +162,7 @@
     height: 29px;
     line-height: 32px;
     padding: 0 0 0 4px;
-    flex: 1 0;
+    flex: 1 1 6px;
 }
 .bin-select-multiple .bin-select-input>input{
     width: 100%;
@@ -183,6 +184,7 @@
     height: 100%;
     width: 24px;
     background-color: #fff;
+    z-index: 1;
 }
 
 .bin-select-clean, .bin-select-arrow{

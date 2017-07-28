@@ -205,8 +205,18 @@ class Select extends Component{
 
     }
 
-    componentWillUpdate(){
-
+    componentWillUpdate(nextProps, nextState){
+        console.log('in componentWillUpdate');
+        const prevInputValue = this.state.inputValue;
+        const prevShowDropdown = this.state.showDropdown;
+        const nextInputValue = nextState.inputValue;
+        const nextShowDropdown = nextState.showDropdown;
+        this._renderPrevOptions = false;
+        this._prevInputValue = null;
+        if(prevInputValue !== nextInputValue && prevShowDropdown === true && nextShowDropdown === false){
+            this._renderPrevOptions = true;
+            this._prevInputValue = prevInputValue;
+        }
     }
 
     componentDidUpdate(){
@@ -308,8 +318,6 @@ class Select extends Component{
             this.toggleDropdownClass();
             return;
         }*/
-        console.log('multi debug');
-        console.log(this.state.showDropdown);
         if(!this.state.showDropdown){
             this.focus();
             this.openDropdown();
@@ -428,15 +436,15 @@ class Select extends Component{
         inputValue = nextState ? nextState.inputValue : inputValue;
         const isFocused = nextState ? nextState.isFocused : this.state.isFocused;
 
-        console.log(inputValue);
-
         this.setState({
             showDropdown: false,
             inputValue: inputValue,
             isPseudoFocused: isFocused && !this.props.multi
         });
+
         dropdownClassList.remove(styles['slide-up-enter-active']);
         dropdownClassList.add(styles['slide-up-leave-active']);
+
     }
 
     //this.input 获取焦点
@@ -446,7 +454,6 @@ class Select extends Component{
     }
     //this.input 失去焦点
     blurInput(){
-        console.log(this.input);
         if(!this.input) return;
         this.input.blur();
     }
@@ -546,7 +553,12 @@ class Select extends Component{
                 inputValue: this.handleInputValueChange(''),
                 focusedOption: null
             }, ()=>{
-                this.addValue(value);
+                const valueArray = this.getValueArray(this.props.selectedValue);
+                if(valueArray.indexOf(value) > -1){
+                    this.removeValue(value);
+                }else{
+                    this.addValue(value);
+                }
             });
         }else{
             let inputValue = this.getOptionLabel(value) || '';
@@ -592,11 +604,7 @@ class Select extends Component{
     }
 
     handleInputBlur(event){
-        console.log('handleInputBlur');
-        console.log(document.activeElement);
-        console.log(this.input);
         if(this.dropdown && (this.dropdown === document.activeElement || this.dropdown.contains(document.activeElement))){
-            console.log('click options');
             this.focus();
             return;
         }
@@ -665,7 +673,12 @@ class Select extends Component{
 
     //根据输入值筛选options
     filterOptions(excludeOptions){
-        let filterValue = this.state.inputValue;
+        let filterValue = '';
+        if(this._renderPrevOptions){
+            filterValue = this._prevInputValue;
+        }else{
+            filterValue = this.state.inputValue;
+        }
         let options = this.props.options || [];
         if(this.props.filterOptions){
             const filterOptions = typeof this.props.filterOptions === 'function'
@@ -757,7 +770,6 @@ class Select extends Component{
     }
 
     renderValue(valueArray, showDropdown){
-        //console.log(valueArray);
         let renderLabel = this.props.valueRenderer || this.getOptionLabel.bind(this);
         let ValueComponent = this.props.valueComponent;
 
@@ -789,7 +801,6 @@ class Select extends Component{
             });
         }else if(!searchable){
             //有值，单选，只有在不可输入的情况渲染value，可输入用input代替
-            console.log(renderLabel(valueArray[0]));
             if(showDropdown) onClick = null;
             return (
                 <ValueComponent
@@ -836,7 +847,6 @@ class Select extends Component{
     }
 
     renderInput(valueArray, focusedOptionIndex){
-        //console.log('renderInput');
         const showDropdown = this.state.showDropdown;
 
         const prefixCls= this.props.prefixCls;
