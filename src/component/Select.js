@@ -98,6 +98,7 @@ class Select extends Component{
         noResultText: '无匹配数据',
         menuRenderer: defaultMenuRenderer,
         optionComponent: Option,
+        pageNumber: 5,
     };
 
     static PropTypes = {
@@ -172,6 +173,8 @@ class Select extends Component{
         optionClassName: PropTypes.string,          //option自定义css 类
         optionComponent: PropTypes.func,            //用来渲染option的react component
         optionRenderer: PropTypes.func,             //自定义渲染option的fn
+
+        pageNumber: PropTypes.number,               //page up/down 按键指定条数
     };
 
     componentDidMount(){
@@ -206,7 +209,8 @@ class Select extends Component{
     }
 
     componentWillUpdate(nextProps, nextState){
-        console.log('in componentWillUpdate');
+
+        //某些情况下，filterOptions应该按照前一个状态的inputValue进行筛选。
         const prevInputValue = this.state.inputValue;
         const prevShowDropdown = this.state.showDropdown;
         const nextInputValue = nextState.inputValue;
@@ -337,51 +341,119 @@ class Select extends Component{
 
     }
 
-    handleMouseDownOnMenu(){
-
+    handleMouseDownOnMenu(event){
+        if(this.props.disabled || (event.type === 'mousedown' && event.button !== 0)){
+            return;
+        }
+        event.stopPropagation();
+        event.preventDefault();
     }
 
     handleTouchStart(){
-
+        this.dragging = false;
     }
 
     handleTouchMove(){
-
+        this.dragging = true;
     }
 
-    handleTouchEnd(){
-
+    handleTouchEnd(event){
+        if(this.dragging) return;
+        this.handleMouseDown(event);
     }
 
-    handleTouchEndClearValue(){
-
+    handleTouchEndClearValue(event){
+        if(this.dragging){
+            return;
+        }
+        this.clearValue(event);
     }
 
     selectFocusedOption(){
-
+        if(this._focusedOption){
+            this.selectValue(this._focusedOption);
+        }
     }
 
     focusPrevOption(){
-
+        this.focusAdjacentOption('previous');
     }
 
     focusNextOption(){
-
+        this.focusAdjacentOption('next');
     }
 
     focusPageUpOption(){
-
+        this.focusAdjacentOption('page_up');
     }
 
     focusPageDownOption(){
-
+        this.focusAdjacentOption('page_down');
     }
 
     focusEndOption(){
-
+        this.focusAdjacentOption('end');
     }
 
     focusStartOption(){
+        this.focusAdjacentOption('start');
+    }
+
+    focusAdjacentOption(dir){
+        let options = this._visibleOptions.map((option, index)=>({option, index}))
+            .filter(option=>!option.option.disabled);
+        this._scrollToFocusedOptionOnUpdate = true; //
+        if(!this.state.showDropdown){
+            this.openDropdown();
+            this.setState({
+                inputValue: '',
+                focusedOption: this._focusedOption || (options.length ? options[dir==='next' ? 0 : options.length-1].option : null)
+            });
+            return;
+        }
+        if(!options.length) return;
+        let focusedIndex = -1;
+        for(let i=0; i<options.length; i++){
+            if(this._focusedOption === options[i].option){
+                focusedIndex = i;
+                break;
+            }
+        }
+        if(dir === 'next' && focusedIndex !== -1){
+            focusedIndex = (focusedIndex + 1) % options.length;
+        }else if(dir === 'previous'){
+            if(focusedIndex > 0){
+                focusedIndex = focusedIndex - 1;
+            }else{
+                focusedIndex = options.length - 1;
+            }
+        }else if(dir === 'start'){
+            focusedIndex = 0;
+        }else if(dir === 'end'){
+            focusedIndex = options.length - 1;
+        }else if(dir === 'page_up'){
+            let potentialIndex = focusedIndex - this.props.pageNumber;
+            if(potentialIndex < 0){
+                focusedIndex = 0;
+            }else{
+                focusedIndex = potentialIndex;
+            }
+        }else if(dir === 'page_down'){
+            let potentialIndex = focusedIndex + this.props.pageNumber;
+            if(potentialIndex > options.length){
+                focusedIndex = options.length;
+            }else{
+                focusedIndex = potentialIndex;
+            }
+        }
+
+        if(focusedIndex === -1){
+            focusedIndex = 0;
+        }
+
+        this.setState({
+            focusedOption: options[focusedIndex].option
+        });
 
     }
 
@@ -701,13 +773,16 @@ class Select extends Component{
     //获取当前focus的option的index。
     getFocusableOptionIndex(selectedOption){
         let options = this._visibleOptions;
-        if(options.length){
+
+        if(!options.length){
             return null;
         }
         const valueKey = this.props.valueKey;
         let focusedOption = this.state.focusedOption || selectedOption;
 
         if(focusedOption && !focusedOption.disabled){
+            console.log('++');
+            console.log(focusedOption);
             let focusedOptionIndex = -1;
             options.some((option, index)=>{
                 const isOptionEqual = option[valueKey] === focusedOption[valueKey];
@@ -1039,6 +1114,8 @@ class Select extends Component{
         }
 
         const focusedOptionIndex = this.getFocusableOptionIndex(valueArray[0]);
+        console.log('focusedOptionIndex');
+        console.log(focusedOptionIndex);
         let focusedOption = null;
         if(focusedOptionIndex !== null){
             focusedOption = this._focusedOption = options[focusedOptionIndex];

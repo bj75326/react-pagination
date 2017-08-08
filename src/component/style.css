@@ -290,7 +290,7 @@
     cursor: pointer;
     transition: background .2s ease-in-out;
 }
-.bin-select-item-focus, .bin-select-item:hover {
+.bin-select-item-focused, .bin-select-item:hover {
     background: #f3f3f3;
 }
 

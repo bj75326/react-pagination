@@ -10,6 +10,9 @@ import {render} from 'react-dom';
 //import StopPropagationTest from '../test/stopPropagationTest.js';
 //import SetStateCallback from '../test/setStateCallback.js';
 //import RefTest from '../test/refTest';
+//import fn from '../test/transaction.js';
+//import BatchUpdate from '../test/batchUpdate1.js';
+//import BatchUpdate from '../test/batchUpdate2.js';
 
 import App from './component/App.js';
 

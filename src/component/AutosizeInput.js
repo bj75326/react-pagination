@@ -97,8 +97,6 @@ class AutosizeInput extends Component {
     }
 
     blur(){
-        console.log('autosizeinput blur');
-        console.log(this.input);
         this.input.blur();
     }
 
@@ -187,8 +185,6 @@ class AutosizeInput extends Component {
         const autosizeInputClass = classnames({
             [className]: !!className
         });
-        console.log('render autosizeInput');
-        console.log(inputProps);
         return (
             <div className={autosizeInputClass} style={wrapperStyle}>
                 <input {...inputProps} ref={this.inputRef.bind(this)}/>
